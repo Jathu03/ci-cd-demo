@@ -1,0 +1,37 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "main" ]       # Run on updates to main (CD)
+  pull_request:
+    branches: [ "main" ]       # Run on PRs targeting main (CI)
+
+jobs:
+  # JOB 1: Continuous Integration (Test)
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+      - name: Install Test Dependencies
+        run: pip install pytest
+      - name: Run Tests
+        run: pytest
+
+  # JOB 2: Continuous Deployment (Deploy)
+  deploy:
+    needs: test                # CRITICAL: Only run if 'test' passes
+    runs-on: ubuntu-latest
+    # Only run this job if we are pushing to 'main', not on Pull Requests
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+      - uses: actions/checkout@v4
+      - name: Simulate Deployment
+        run: |
+          echo "Tests passed. Deploying to production server..."
+          # In real life, you would put AWS/Heroku commands here
+          echo "Deployment Complete! 🚀"
